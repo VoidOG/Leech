@@ -151,6 +151,32 @@ def stats(update, context):
     )
     update.message.reply_text(stats_message)
 
+def add_group(update, context):
+    """Adds a group/channel ID to the upload list."""
+    if len(context.args) != 1:
+        update.message.reply_text("Usage: /addgroup [group_id]")
+        return
+
+    group_id = context.args[0]
+    if group_id not in UPLOAD_GROUPS:
+        UPLOAD_GROUPS.append(group_id)
+        update.message.reply_text(f"Group/Channel ID {group_id} has been added.")
+    else:
+        update.message.reply_text(f"Group/Channel ID {group_id} is already in the list.")
+
+def rm_group(update, context):
+    """Removes a group/channel ID from the upload list."""
+    if len(context.args) != 1:
+        update.message.reply_text("Usage: /rmgroup [group_id]")
+        return
+
+    group_id = context.args[0]
+    if group_id in UPLOAD_GROUPS:
+        UPLOAD_GROUPS.remove(group_id)
+        update.message.reply_text(f"Group/Channel ID {group_id} has been removed.")
+    else:
+        update.message.reply_text(f"Group/Channel ID {group_id} is not in the list.")
+
 # Command handlers
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('help', help_command))
@@ -162,6 +188,8 @@ dispatcher.add_handler(CommandHandler('authorize', authorize))
 dispatcher.add_handler(CommandHandler('deauthorize', deauthorize))
 dispatcher.add_handler(CommandHandler('restart', restart))
 dispatcher.add_handler(CommandHandler('stats', stats))
+dispatcher.add_handler(CommandHandler('addgroup', add_group))  # New command
+dispatcher.add_handler(CommandHandler('rmgroup', rm_group))    # New command
 
 # Start the bot
 updater.start_polling()
