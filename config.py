@@ -17,4 +17,4 @@ AUTHORIZED_USERS = [
 ]
 
 # Path to the VPS log file
-VPS_LOG_FILE = '/path/to/vps/log/file.log'  # Update this path accordingly
+VPS_LOG_FILE = '/var/log/Leech/logs.txt'  # Update this path accordingly
