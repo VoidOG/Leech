@@ -1,21 +1,21 @@
-from pytube import YouTube
+import yt_dlp
 import os
 
-def download_youtube(link,file_name):
+def download_youtube(link, file_name=None):
     try:
-        yt = YouTube(link)
-
-        # Get the highest resolution stream available
-        video_stream = yt.streams.get_highest_resolution()
-
-        # Define the download path
         download_path = "downloads"
         if not os.path.exists(download_path):
             os.makedirs(download_path)
 
-        # Download the video
-        file_path = video_stream.download(output_path=download_path)
+        ydl_opts = {
+            'format': 'best',
+            'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s') if not file_name else os.path.join(download_path, file_name + '.%(ext)s')
+        }
 
-        return file_path  # Return the path to the downloaded file
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(link, download=True)
+            file_path = ydl.prepare_filename(info)  
+            
+        return file_path  
     except Exception as e:
         return f"Error downloading video: {str(e)}"
