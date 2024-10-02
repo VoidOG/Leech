@@ -1,4 +1,5 @@
 import os
+import mimetypes
 import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from xhamster_downloader import download_xhamster  # Make sure this is correctly imported
@@ -68,11 +69,45 @@ def download_command(update, context):
         print(f"Update has no message object: {update}")
 
 def upload_file_to_groups(file_path):
-    """Upload the downloaded file to specified groups/channels."""
+    """Upload the downloaded file to specified groups/channels in its original format."""
+    # Get the MIME type of the file
+    mime_type, _ = mimetypes.guess_type(file_path)
+    
+    if mime_type:
+        if mime_type.startswith('video/'):
+            send_func = updater.bot.send_video
+        elif mime_type.startswith('audio/'):
+            send_func = updater.bot.send_audio
+        elif mime_type.startswith('image/'):
+            send_func = updater.bot.send_photo
+        elif mime_type.startswith('application/pdf'):
+            send_func = updater.bot.send_document
+        elif mime_type.startswith('application/'):
+            # This will cover documents such as Word, Excel, etc.
+            send_func = updater.bot.send_document
+        else:
+            send_func = updater.bot.send_document
+    else:
+        # If MIME type is unknown, default to sending as a document
+        send_func = updater.bot.send_document
+
+    # Loop through the list of groups and send the file
     for group_id in UPLOAD_GROUPS:
         try:
             with open(file_path, 'rb') as file:
-                updater.bot.send_document(chat_id=group_id, document=file)
+                if send_func == updater.bot.send_video:
+                    # If it's a video, send as a video
+                    updater.bot.send_video(chat_id=group_id, video=file, supports_streaming=True)
+                elif send_func == updater.bot.send_audio:
+                    # If it's an audio file, send as audio
+                    updater.bot.send_audio(chat_id=group_id, audio=file)
+                elif send_func == updater.bot.send_photo:
+                    # If it's an image, send as photo
+                    updater.bot.send_photo(chat_id=group_id, photo=file)
+                elif send_func == updater.bot.send_document:
+                    # If it's a document (PDF, other docs), send as document
+                    updater.bot.send_document(chat_id=group_id, document=file)
+                    
                 log_message(f"Uploaded {file_path} to group/channel ID: {group_id}")
         except Exception as e:
             log_message(f"Error uploading to {group_id}: {str(e)}")
