@@ -1,15 +1,7 @@
 import os
-import sys
 import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from youtube_downloader import download_youtube
-from instagram_downloader import download_instagram
-from google_drive_downloader import download_google_drive
-from mediafire_downloader import download_mediafire
-from mega_downloader import download_mega  # New import for Mega
-from torrent_downloader import download_torrent  # New import for Torrent
-from pornhub_downloader import download_pornhub  # New import for Pornhub
-from xhamster_downloader import download_xhamster  # New import for XHamster
+from xhamster_downloader import download_xhamster  # Make sure this is correctly imported
 from config import BOT_TOKEN, LOG_GROUP_ID, UPLOAD_GROUPS, AUTHORIZED_USERS, VPS_LOG_FILE
 
 # Initialize the bot
@@ -45,53 +37,35 @@ def help_command(update, context):
         "/authorize [user_id] - Add a user to the authorized list.\n"
         "/deauthorize [user_id] - Remove a user from the authorized list.\n"
         "/restart - Restart the bot.\n"
-        "/stats - Show bot statistics.\n"
-        "/addgroup [group_id] - Add a group/channel ID to the upload list.\n"
-        "/rmgroup [group_id] - Remove a group/channel ID from the upload list."
+        "/stats - Show bot statistics."
     )
     update.message.reply_text(help_message)
 
 def download_command(update, context):
     """Handles the download command with optional file name."""
-    if len(context.args) < 1:
-        update.message.reply_text("Please provide a link to download.")
-        return
-
-    link = context.args[0]
-    file_name = context.args[1] if len(context.args) > 1 else None
-
-    # Determine the file path based on the platform
-    try:
-        if 'youtube.com' in link or 'youtu.be' in link:
-            file_path = download_youtube(link, file_name)
-        elif 'instagram.com' in link:
-            file_path = download_instagram(link, file_name)
-        elif 'drive.google.com' in link:
-            file_path = download_google_drive(link, file_name)
-        elif 'mediafire.com' in link:
-            file_path = download_mediafire(link, file_name)
-        elif 'mega.nz' in link:
-            file_path = download_mega(link, file_name)
-        elif 'torrent' in link:  # Update this check according to the actual torrent link structure
-            file_path = download_torrent(link)  # Ensure it can accept torrent links
-        elif 'pornhub.com' in link:
-            file_path = download_pornhub(link, file_name)
-        elif 'xhamster.com' in link:
-            file_path = download_xhamster(link, file_name)
-        else:
-            update.message.reply_text("Unsupported link format.")
+    if update.message:  # Ensure the message object exists
+        if len(context.args) < 1:
+            update.message.reply_text("Please provide a link to download.")
             return
 
-        # Log the download activity
-        log_message(f"Downloaded: {link} -> {file_path}")
-        update.message.reply_text(f"Downloaded: {file_path}")
+        link = context.args[0]
+        file_name = context.args[1] if len(context.args) > 1 else 'downloaded_file'
 
-        # Upload the downloaded file to specified groups/channels
-        upload_file_to_groups(file_path)
+        try:
+            # Example: download from XHamster
+            file_path = download_xhamster(link, file_name)
+            update.message.reply_text(f"Downloaded: {file_path}")
 
-    except Exception as e:
-        update.message.reply_text(f"Error occurred: {str(e)}")
-        log_message(f"Error downloading: {link} - {str(e)}")
+            # Log the download activity
+            log_message(f"Downloaded: {link} -> {file_path}")
+            
+            # Upload the downloaded file to specified groups/channels
+            upload_file_to_groups(file_path)
+        except Exception as e:
+            update.message.reply_text(f"Error occurred: {str(e)}")
+            log_message(f"Error downloading: {link} - {str(e)}")
+    else:
+        print(f"Update has no message object: {update}")
 
 def upload_file_to_groups(file_path):
     """Upload the downloaded file to specified groups/channels."""
@@ -165,32 +139,6 @@ def stats(update, context):
     )
     update.message.reply_text(stats_message)
 
-def add_group(update, context):
-    """Adds a group/channel ID to the upload list."""
-    if len(context.args) != 1:
-        update.message.reply_text("Usage: /addgroup [group_id]")
-        return
-
-    group_id = context.args[0]
-    if group_id not in UPLOAD_GROUPS:
-        UPLOAD_GROUPS.append(group_id)
-        update.message.reply_text(f"Group/Channel ID {group_id} has been added.")
-    else:
-        update.message.reply_text(f"Group/Channel ID {group_id} is already in the list.")
-
-def rm_group(update, context):
-    """Removes a group/channel ID from the upload list."""
-    if len(context.args) != 1:
-        update.message.reply_text("Usage: /rmgroup [group_id]")
-        return
-
-    group_id = context.args[0]
-    if group_id in UPLOAD_GROUPS:
-        UPLOAD_GROUPS.remove(group_id)
-        update.message.reply_text(f"Group/Channel ID {group_id} has been removed.")
-    else:
-        update.message.reply_text(f"Group/Channel ID {group_id} is not in the list.")
-
 # Command handlers
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('help', help_command))
@@ -202,8 +150,6 @@ dispatcher.add_handler(CommandHandler('authorize', authorize))
 dispatcher.add_handler(CommandHandler('deauthorize', deauthorize))
 dispatcher.add_handler(CommandHandler('restart', restart))
 dispatcher.add_handler(CommandHandler('stats', stats))
-dispatcher.add_handler(CommandHandler('addgroup', add_group))  # New command
-dispatcher.add_handler(CommandHandler('rmgroup', rm_group))    # New command
 
 # Start the bot
 updater.start_polling()
