@@ -1,11 +1,11 @@
-BOT_TOKEN = ''
-LOG_GROUP_ID = ''
+BOT_TOKEN = ""
+LOG_GROUP_ID = ""
 UPLOAD_GROUPS = [
-    ''
+    "",
 ]
 
 AUTHORIZED_USERS = [
-    '',
-    '',
+    "",
+    "",
 ]
-VPS_LOG_FILE = '/var/log/Leech/logs.txt'
+VPS_LOG_FILE = "/var/log/Leech/logs.txt"
