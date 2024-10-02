@@ -6,6 +6,10 @@ from youtube_downloader import download_youtube
 from instagram_downloader import download_instagram
 from google_drive_downloader import download_google_drive
 from mediafire_downloader import download_mediafire
+from mega_downloader import download_mega  # New import for Mega
+from torrent_downloader import download_torrent  # New import for Torrent
+from pornhub_downloader import download_pornhub  # New import for Pornhub
+from xhamster_downloader import download_xhamster  # New import for XHamster
 from config import BOT_TOKEN, LOG_GROUP_ID, UPLOAD_GROUPS, AUTHORIZED_USERS, VPS_LOG_FILE
 
 # Initialize the bot
@@ -41,7 +45,9 @@ def help_command(update, context):
         "/authorize [user_id] - Add a user to the authorized list.\n"
         "/deauthorize [user_id] - Remove a user from the authorized list.\n"
         "/restart - Restart the bot.\n"
-        "/stats - Show bot statistics."
+        "/stats - Show bot statistics.\n"
+        "/addgroup [group_id] - Add a group/channel ID to the upload list.\n"
+        "/rmgroup [group_id] - Remove a group/channel ID from the upload list."
     )
     update.message.reply_text(help_message)
 
@@ -64,6 +70,14 @@ def download_command(update, context):
             file_path = download_google_drive(link, file_name)
         elif 'mediafire.com' in link:
             file_path = download_mediafire(link, file_name)
+        elif 'mega.nz' in link:
+            file_path = download_mega(link, file_name)
+        elif 'torrent' in link:  # Update this check according to the actual torrent link structure
+            file_path = download_torrent(link)  # Ensure it can accept torrent links
+        elif 'pornhub.com' in link:
+            file_path = download_pornhub(link, file_name)
+        elif 'xhamster.com' in link:
+            file_path = download_xhamster(link, file_name)
         else:
             update.message.reply_text("Unsupported link format.")
             return
