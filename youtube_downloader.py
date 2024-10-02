@@ -1,7 +1,7 @@
 from pytube import YouTube
 import os
 
-def download_youtube(link):
+def download_youtube(link,file_name):
     try:
         yt = YouTube(link)
 
